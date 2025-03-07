@@ -1,0 +1,6 @@
+- name: Create Prometheus user
+      user:
+        name: "{{ prometheus_user }}"
+        group: "{{ prometheus_group }}"
+        createhome: no
+        shell: /sbin/nologin
