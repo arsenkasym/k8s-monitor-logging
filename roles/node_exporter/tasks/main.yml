@@ -1,0 +1,72 @@
+---
+- name: Create node_exporter group
+  group:
+    name: "{{ node_exporter_group }}"
+    state: present
+
+- name: Create node_exporter user
+  user:
+    name: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
+    shell: "/usr/sbin/nologin"
+    create_home: no
+    state: present
+
+- name: Download Node Exporter
+  get_url:
+    url: "{{ node_exporter_url }}"
+    dest: "/tmp/node_exporter.tar.gz"
+    mode: '0644'
+
+- name: Extract Node Exporter
+  unarchive:
+    src: "/tmp/node_exporter.tar.gz"
+    dest: "/tmp/"
+    remote_src: yes
+
+- name: Move Node Exporter binary
+  command: mv {{ node_exporter_extract_path }}/node_exporter {{ node_exporter_bin_path }}
+  args:
+    creates: "{{ node_exporter_bin_path }}"
+
+- name: Set permissions for Node Exporter binary
+  file:
+    path: "{{ node_exporter_bin_path }}"
+    owner: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
+    mode: '0755'
+
+- name: Create systemd service file for Node Exporter
+  copy:
+    dest: "{{ node_exporter_service }}"
+    content: |
+      [Unit]
+      Description=Node Exporter
+      Wants=network-online.target
+      After=network-online.target
+      
+      [Service]
+      User={{ node_exporter_user }}
+      Group={{ node_exporter_group }}
+      Type=simple
+      ExecStart={{ node_exporter_bin_path }}
+      Restart=always
+      
+      [Install]
+      WantedBy=multi-user.target
+  notify:
+    - Restart node_exporter
+
+- name: Start and enable Node Exporter service
+  systemd:
+    name: node_exporter
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: Add Node Exporter target to Prometheus config
+  lineinfile:
+    path: "{{ prometheus_config_path }}"
+    insertafter: 'scrape_configs:'
+    line: "    - targets: ['{{ inventory_hostname }}:9100']"
+  notify: Reload prometheus
