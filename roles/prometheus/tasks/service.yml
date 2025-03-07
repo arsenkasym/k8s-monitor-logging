@@ -1,0 +1,18 @@
+- name: Copy systemd service file
+      copy:
+        src: prometheus.service
+        dest: /etc/systemd/system/prometheus.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart Prometheus
+    
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+  
+    - name: Ensure Prometheus service is running
+      systemd:
+        name: prometheus
+        state: started
+        enabled: yes
