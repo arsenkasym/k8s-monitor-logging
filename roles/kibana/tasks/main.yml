@@ -1,0 +1,42 @@
+#Installation Kibana
+
+- name: "Install Kibana"
+  ansible.builtin.yum:
+     name: kibana
+     state: present
+     enablerepo: elasticsearch
+
+- name: "Replace a sslverificationmode in a file"
+  ansible.builtin.lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: '^#elasticsearch.ssl.verificationMode'
+    line: 'elasticsearch.ssl.verificationMode: none'
+    backup: yes
+
+- name: "Replace a server.host in a file"
+  ansible.builtin.lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: '^#server.host'
+    line: 'server.host: "0.0.0.0"'
+    backup: yes
+
+
+- name: "Replace a elasticsearch.hosts in a file"
+  ansible.builtin.lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: '^#elasticsearch.hosts'
+    line: 'elasticsearch.hosts: ["https://{{ elastic_address }}:9200"]'
+
+- name: "Replace a elastic username"
+  ansible.builtin.lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: '^#elasticsearch.username'
+    line: 'elasticsearch.username: "kibana_system"'
+
+
+- name: "Replace a elastic password"
+  ansible.builtin.lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: '^#elasticsearch.password'
+    line: 'elasticsearch.password: "kibana"'
+
