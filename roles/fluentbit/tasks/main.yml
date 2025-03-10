@@ -1,0 +1,58 @@
+---
+- name: Create fluentbit group
+  group:
+    name: "{{ fluentbit_group }}"
+    state: present
+
+- name: Create fluentbit user
+  user:
+    name: "{{ fluentbit_user }}"
+    group: "{{ fluentbit_group }}"
+    shell: "/usr/sbin/nologin"
+    create_home: no
+    state: present
+
+- name: Download FluentBit package
+  get_url:
+    url: "https://packages.fluentbit.io/centos/9/x86_64/fluent-bit-{{ fluentbit_version }}-1.x86_64.rpm"
+    dest: "/tmp/fluent-bit.rpm"
+  when: ansible_os_family == "RedHat"
+
+- name: Install FluentBit
+  yum:
+    name: "/tmp/fluent-bit.rpm"
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Ensure FluentBit directories exist
+  file:
+    path: "/etc/fluent-bit"
+    state: directory
+    owner: "{{ fluentbit_user }}"
+    group: "{{ fluentbit_group }}"
+    mode: '0755'
+
+- name: Deploy FluentBit config
+  template:
+    src: "fluent-bit.conf.j2"
+    dest: "{{ fluentbit_config }}"
+    owner: "{{ fluentbit_user }}"
+    group: "{{ fluentbit_group }}"
+    mode: '0644'
+  notify: Restart fluentbit
+
+- name: Deploy systemd service file
+  template:
+    src: "fluent-bit.service.j2"
+    dest: "{{ fluentbit_service }}"
+    owner: "root"
+    group: "root"
+    mode: '0644'
+  notify: Reload systemd
+
+- name: Start and enable FluentBit service
+  systemd:
+    name: fluent-bit
+    enabled: yes
+    state: started
+    daemon_reload: yes
