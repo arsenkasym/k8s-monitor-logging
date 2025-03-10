@@ -1,6 +1,6 @@
 fluentbit_version: "2.1.6"
-fluentbit_user: "fluentbit"
-fluentbit_group: "fluentbit"
+fluentbit_user: "elastic"
+fluentbit_group: "elastic"
 fluentbit_bin: "/usr/local/bin/fluent-bit"
 fluentbit_service: "/etc/systemd/system/fluent-bit.service"
 fluentbit_config: "/etc/fluent-bit/fluent-bit.conf"
