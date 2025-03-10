@@ -2,10 +2,12 @@
 - hosts: "all"
   become: true
   roles:
+    - prometheus
+    - node_exporter
     - elasticsearch
-    - kibana
-    - logstash  
+    - kibana  
     - certs
+    - fluentbit
 
   tasks:
   - name: "Firewall ports enable"
@@ -16,13 +18,14 @@
     loop:
     - 9200
     - 5601
+    - 9090
     become: true
 
   - name: "Reload firewalld to apply changes"
     ansible.builtin.command: firewall-cmd --reload
     become: true
 
-  - name: "Restart ElK stack"
+  - name: "Restart EFK stack"
     ansible.builtin.systemd:
      name: "{{ item }}"
      state: restarted
@@ -30,6 +33,6 @@
     loop:
     - elasticsearch
     - kibana
-    - logstash
+    - fluentbit
     become: true
 
