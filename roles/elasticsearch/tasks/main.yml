@@ -1,0 +1,55 @@
+# Installation elasticsearch
+  - name: Import Elasticsearch GPG key
+    ansible.builtin.command:
+         cmd: rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    become: true
+
+  - name: "Copy our repo file to /etc/yum.repos.d/"
+    ansible.builtin.copy: 
+      src: "files/elasticsearch.repo" 
+      dest: "/etc/yum.repos.d/" 
+      owner: "root" 
+      group: "root" 
+      mode: "0755"
+
+  - name: "Install Elasticsearch"
+    ansible.builtin.yum:
+     name: elasticsearch
+     state: present
+     enablerepo: elasticsearch
+    become: true
+
+  - name: "Set ownership and permissions for Elasticsearch certificates directory"
+    ansible.builtin.file:
+      path: "/etc/elasticsearch/certs/"
+      state: directory
+      owner: elasticsearch
+      group: elasticsearch
+      mode: "0750"
+      recurse: yes
+    become: true
+
+  - name: "Delete elasticsearch.yml"
+    ansible.builtin.file:
+     path: "/etc/elasticsearch/elasticsearch.yml"
+     state: "absent"
+
+  - name: "Copy own elasticsearch.yml file"
+    ansible.builtin.copy:
+     src: "files/elasticsearch.yml"
+     dest: "/etc/elasticsearch/"
+     owner: "elasticsearch"
+     group: "elasticsearch"
+     mode: "0755"
+
+  - name: "Enable and restart Elasticsearch"
+    ansible.builtin.systemd:
+     name: "elasticsearch"
+     enabled: yes
+     state: restarted
+    become: true
+
+  - name: "Reset elastic user"
+    ansible.builtin.command: '/bin/bash $PWD/resetuser.sh'
+    become: true
+      
