@@ -7,6 +7,10 @@ Kibana
 Fluentbit
 Prometheus
 NodeExporter
+Оперативная система:
+Rocky linux 8.0+
+Almalinux 8.0+
+RHEL 8.0+
 ## Установить модули
 ansible-galaxy collection install ansible.posix
 
