@@ -1,6 +1,7 @@
 # k8s-monitor-logging
 
+# Установить модули
 ansible-galaxy collection install ansible.posix
 
-Run playbook
-ansible-playbook -i hosts.ini playbook.yml -e "elastic_address=change to your address"
+# Запуск плэйбука
+ansible-playbook -i hosts.ini playbook.yml -e "elastic_address=свой адрес"
